@@ -32,19 +32,10 @@ source venv/bin/activate
 pip install fastapi uvicorn python-multipart
 ```
 
-Or  `requirements.txt`: 
+Or use `requirements.txt`: 
 ```bash
 pip install -r requirements.txt
 ```
-
-**requirements.txt:**
-```
-fastapi==0.104.1
-uvicorn==0.24.0
-python-multipart==0.0.6
-```
-
----
 
 ## Running the Application
 
