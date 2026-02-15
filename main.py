@@ -9,9 +9,10 @@ import re
 
 app = FastAPI()
 
-# In-memory storage
+# In-memory storage for candidates
 candidates = [] #candidates database
 current_id = 1 
+MAX_FILE_SIZE = 10 * 1024 * 1024
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXT = (".pdf", ".doc", ".docx")
@@ -68,7 +69,7 @@ def create_candidate(
     contact_number: str = Form(...),
     contact_address: str = Form(...),
     education: str = Form(...),
-    graduation_year: int = Form(...),
+    graduation_year: int = Form(..., ge=2015, le=datetime.now().year + 3),
     experience: int = Form(..., ge=0),
     skills: str = Form(...),  # comma separated
     resume: UploadFile = File(...)
@@ -87,8 +88,11 @@ def create_candidate(
 
     # Validate contact email and phone and dob
     if not validate_email(contact_email):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Invalid email format")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid email format")
+    
+    # if email already exists
+    if any(c["contact_email"].lower() == contact_email.lower() for c in candidates):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Email already registered")
 
     if not validate_phone(contact_number):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -103,13 +107,12 @@ def create_candidate(
         raise HTTPException(status_code=400, detail="Uploaded file must have a filename")
 
     if not filename.lower().endswith(ALLOWED_EXT):
-        raise HTTPException(status_code=400, detail="Invalid file type")
+        raise HTTPException(status_code=400, detail="Invalid file type! Only PDF, DOC, DOCX files are allowed for resume")
     
     #File size validation 
     resume.file.seek(0, 2)
     file_size = resume.file.tell()
     resume.file.seek(0)
-    MAX_FILE_SIZE = 10 * 1024 * 1024
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="File size must be less than 10MB")
 
@@ -129,6 +132,8 @@ def create_candidate(
                             detail="Failed to save uploaded file")
 
     skill_list = [s.strip() for s in skills.split(",") if s.strip()]
+    if not skill_list:
+        raise HTTPException(status_code=400, detail="At least one skill is required")
 
     candidate = {
         "id": current_id,
