@@ -11,26 +11,47 @@ Tested on:
 ### Installation steps ###
 
 ### Step 1: Clone the Repository
-- git clone https://github.com/Ashikravi/miniresume-ashik-ravi.git
+```bash
+git clone https://github.com/Ashikravi/miniresume-ashik-ravi.git
+cd miniresume-ashik-ravi
+```
 
-- cd miniresume-ashik-ravi
-
-### Step 2: Create a Virtual Environment
+### Step 2: Create a Virtual Environment (Recommended)
+```bash
 # For Windows
-- python -m venv venv
-- venv\Scripts\activate
+python -m venv venv
+venv\Scripts\activate
 
 # For macOS/Linux
-- python3 -m venv venv
-- source venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
+```
 
 ### Step 3: Install Dependencies
-- pip install fastapi uvicorn python-multipart
-- pip install -r requirements.txt
+```bash
+pip install fastapi uvicorn python-multipart
+```
 
-##  Running the Application
-- uvicorn main:app --reload
+Or  `requirements.txt`: 
+```bash
+pip install -r requirements.txt
+```
 
+**requirements.txt:**
+```
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+```
+
+---
+
+## Running the Application
+
+### Using Uvicorn 
+```bash
+uvicorn main:app --reload
+```
 ### Expected Output
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 INFO:     Started reloader process
