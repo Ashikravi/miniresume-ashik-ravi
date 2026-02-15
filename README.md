@@ -42,13 +42,13 @@ The application will be available at:
 - **API Base URL:** `http://127.0.0.1:8000`
 - **Interactive API Docs (Swagger):** `http://127.0.0.1:8000/docs`
 
-## 📚 API Documentation
+# API Documentation
 
 Once the application is running, visit `http://127.0.0.1:8000/docs` for interactive API documentation where you can test all endpoints.
 
 ---
 
-## 🛠️ API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
