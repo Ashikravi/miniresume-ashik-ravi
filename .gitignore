@@ -11,6 +11,8 @@ ENV/
 
 # Uploads - don't commit user files
 uploads/
+resume.db
+*.db
 
 # IDEs
 .vscode/
