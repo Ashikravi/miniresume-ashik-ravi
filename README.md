@@ -7,6 +7,7 @@ Tested on:
 - FastAPI
 - Uvicorn (ASGI server)
 - python-multipart (for file uploads)
+- SQLite (NO config needed)
 
 ### Installation steps ###
 
@@ -28,11 +29,8 @@ source venv/bin/activate
 ```
 
 ### Step 3: Install Dependencies
-```bash
-pip install fastapi uvicorn python-multipart
-```
 
-Or use `requirements.txt`: 
+ use `requirements.txt`: 
 ```bash
 pip install -r requirements.txt
 ```
