@@ -5,52 +5,18 @@ import shutil
 import os
 from uuid import uuid4
 from datetime import datetime, date, timezone
-import re
 from sqlalchemy.orm import Session
-from database import engine, SessionLocal
+from database import engine, get_db
 import models 
+from validators import *
 
 
-app = FastAPI()
+app = FastAPI(title="Mini Resume Management API")
 
 models.Base.metadata.create_all(bind=engine)
 
-MAX_FILE_SIZE = 10 * 1024 * 1024
-UPLOAD_FOLDER = "uploads"
+MAX_FILE_SIZE = 10 * 1024 * 1024 # MAX 10MB for resume
 ALLOWED_EXT = (".pdf", ".doc", ".docx")
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-def ensure_upload_folder():
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-
-#Validations
-def validate_email(email: str):
-    pattern = r"^[^@]+@[^@]+\.[^@]+$"
-    if not re.match(pattern, email):
-        raise HTTPException(status_code=400,detail="Invalid email format")
-
-
-def validate_phone(phone: str) -> bool:
-    digits = re.sub(r"\D", "", phone)
-    return  7 <= len(digits) <= 15
-
-
-def validate_dob(dob_str: str) -> date:
-    try:
-        dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="DOB must be in YYYY-MM-DD format")
-    if dob >= date.today():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="DOB must be a past date")
-    return dob
 
 
 # Health Check
@@ -108,32 +74,25 @@ def create_candidate(
             detail="Email already registered"
         )
 
-    if not validate_phone(contact_number):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid contact number"
-        )
-
-    _ = validate_dob(dob)
+    validate_phone(contact_number)
+    
+    validate_dob(dob)
 
     # Validate filename presence and file type
     filename = resume.filename
 
-    if not filename:
-        raise HTTPException(status_code=400, detail="Uploaded file must have a filename")
-
-    if not filename.lower().endswith(ALLOWED_EXT):
-        raise HTTPException(status_code=400, detail="Invalid file type! Only PDF, DOC, DOCX files are allowed for resume")
+    if not filename or not filename.lower().endswith(ALLOWED_EXT):
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid file. Only PDF, DOC, DOCX files with a valid filename are allowed.")
     
     #File size validation 
     resume.file.seek(0, 2)
     file_size = resume.file.tell()
     resume.file.seek(0)
     if file_size > MAX_FILE_SIZE:
-        raise HTTPException(status_code=413, detail="File size must be less than 10MB")
-
-    # Ensure upload folder
-    ensure_upload_folder()
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                            detail="File size must be less than 10MB")
 
     # Save file with a unique name 
     ext = os.path.splitext(filename)[1]
@@ -273,4 +232,4 @@ def delete_candidate(candidate_id: int, db:Session= Depends(get_db)):
     db.delete(candidate)
     db.commit()
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_204_NO_CONTENT,)
